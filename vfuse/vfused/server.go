@@ -276,6 +276,26 @@ func (fs *FS) Chmod(name string, mode uint32, context *fuse.Context) fuse.Status
 	return fuse.OK
 }
 
+func (fs *FS) Rename(name string, target string, context *fuse.Context) fuse.Status {
+	vlogf("fs.Rename(%q, %q)", name, target)
+	resc, err := fs.sendPacket(&pb.RenameRequest{
+		Name:   &name,
+		Target: &target,
+	})
+	if err != nil {
+		return fuse.EIO
+	}
+	res, ok := (<-resc).(*pb.RenameResponse)
+	if !ok {
+		vlogf("fs.Rename(%q, %q) = EIO", name, target)
+		return fuse.EIO
+	}
+	if res.Err != nil {
+		return fuseError(res.Err)
+	}
+	return fuse.OK
+}
+
 //SetAttr(input *SetAttrIn, out *AttrOut) (code Status)
 
 func (fs *FS) readFromClient() {
