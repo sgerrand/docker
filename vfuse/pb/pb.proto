@@ -148,8 +148,8 @@ message MknodResponse {
 }
 
 message RenameRequest {
-	required string name = 1;
-	required string target = 2;
+        required string name = 1;
+        required string target = 2;
 }
 
 message RenameResponse {
@@ -157,11 +157,11 @@ message RenameResponse {
 }
 
 message RmdirRequest {
-//...
+        required string name = 1;
 }
 
 message RmdirResponse {
-//...
+        optional Error err = 1;
 }
 
 message UnlinkRequest {
@@ -223,4 +223,3 @@ message CloseRequest {
 message CloseResponse {
         optional Error err = 1;
 }
-
