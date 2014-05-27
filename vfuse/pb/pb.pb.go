@@ -578,20 +578,44 @@ func (m *TruncateResponse) GetErr() *Error {
 }
 
 type LinkRequest struct {
-	XXX_unrecognized []byte `json:"-"`
+	Name             *string `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
+	Target           *string `protobuf:"bytes,2,req,name=target" json:"target,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
 func (m *LinkRequest) Reset()         { *m = LinkRequest{} }
 func (m *LinkRequest) String() string { return proto.CompactTextString(m) }
 func (*LinkRequest) ProtoMessage()    {}
 
+func (m *LinkRequest) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *LinkRequest) GetTarget() string {
+	if m != nil && m.Target != nil {
+		return *m.Target
+	}
+	return ""
+}
+
 type LinkResponse struct {
+	Err              *Error `protobuf:"bytes,1,opt,name=err" json:"err,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
 }
 
 func (m *LinkResponse) Reset()         { *m = LinkResponse{} }
 func (m *LinkResponse) String() string { return proto.CompactTextString(m) }
 func (*LinkResponse) ProtoMessage()    {}
+
+func (m *LinkResponse) GetErr() *Error {
+	if m != nil {
+		return m.Err
+	}
+	return nil
+}
 
 type SymlinkRequest struct {
 	Value            *string `protobuf:"bytes,1,req,name=value" json:"value,omitempty"`

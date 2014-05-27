@@ -116,11 +116,12 @@ message TruncateResponse {
 }
 
 message LinkRequest {
-//...
+        required string name = 1;
+        required string target = 2;
 }
 
 message LinkResponse {
-//...
+        optional Error err = 1;
 }
 
 message SymlinkRequest {

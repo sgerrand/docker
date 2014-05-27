@@ -241,6 +241,23 @@ func (fs *FS) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Stat
 	return fattr, fuse.OK
 }
 
+func (fs *FS) Link(name string, target string, context *fuse.Context) fuse.Status {
+	vlogf("fs.Link(%q, %q)", name, target)
+	resc, err := fs.sendPacket(&pb.LinkRequest{
+		Name:   &name,
+		Target: &target,
+	})
+	if err != nil {
+		return fuse.EIO
+	}
+	res, ok := (<-resc).(*pb.LinkResponse)
+	if !ok {
+		vlogf("fs.Link(%q, %q) = EIO", name, target)
+		return fuse.EIO
+	}
+	return fuseError(res.Err)
+}
+
 func (fs *FS) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Status {
 	vlogf("fs.Mkdir(%q, %o)", name, mode)
 	resc, err := fs.sendPacket(&pb.MkdirRequest{

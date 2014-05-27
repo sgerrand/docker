@@ -203,7 +203,7 @@ func newWorld(t *testing.T) *world {
 // fpath wraps filepath.Join(w.fuseMountDir, path...).
 func (w *world) fpath(path ...string) string { return w.pathJoin(w.mountDir, path) }
 
-// fpath wraps filepath.Join(w.clientDir, path...).
+// cpath wraps filepath.Join(w.clientDir, path...).
 func (w *world) cpath(path ...string) string { return w.pathJoin(w.clientDir, path) }
 
 func (w *world) pathJoin(base string, path []string) string {
@@ -499,6 +499,53 @@ func TestOpenRead(t *testing.T) {
 	}
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// Link file
+func init() { addWorldTest("TestLink") }
+func TestLink(t *testing.T) {
+	w := getWorld(t)
+	defer w.release()
+
+	w.writeFile(w.cpath("link/before.txt"), "test file")
+
+	err := os.Link("../link/before.txt", w.fpath("link/after.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fi, err := os.Stat(w.cpath("link/after.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := os.Stat(w.cpath("link/before.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(target, fi) {
+		t.Fatal("Files are not the same")
+	}
+	content, err := ioutil.ReadFile(w.cpath("link/after.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(content) != "test file" {
+		t.Fatal("Wrong content read from link, got %s, must be \"test file\"", content)
+	}
+}
+
+// Link file exists
+func init() { addWorldTest("TestLinkFileAlreadyExists") }
+func TestLinkFileAlreadyExists(t *testing.T) {
+	w := getWorld(t)
+	defer w.release()
+
+	w.writeFile(w.cpath("link/exists/before.txt"), "test file")
+	w.writeFile(w.cpath("link/exists/after.txt"), "test file exists")
+
+	err := os.Link(w.cpath("link/exists/before.txt"), w.cpath("link/exists/after.txt"))
+	if !os.IsExist(err) {
+		t.Fatalf("Error must be 'not exist', got %T:%s", err, err)
 	}
 }
 

@@ -111,6 +111,8 @@ func (s *Server) Run() {
 			res, err = s.handleChmodRequest(m)
 		case *pb.CloseRequest:
 			res, err = s.handleCloseRequest(m)
+		case *pb.LinkRequest:
+			res, err = s.handleLinkRequest(m)
 		case *pb.MkdirRequest:
 			res, err = s.handleMkdirRequest(m)
 		case *pb.OpenRequest:
@@ -240,6 +242,24 @@ func (s *Server) handleCloseRequest(req *pb.CloseRequest) (proto.Message, error)
 		res.Err = &pb.Error{Other: proto.String(err)}
 	}
 	return res, nil
+}
+
+func (s *Server) handleLinkRequest(req *pb.LinkRequest) (proto.Message, error) {
+	res := new(pb.LinkResponse)
+	if !s.vol.Writable {
+		return &pb.LinkResponse{Err: errRO}, nil
+	}
+	if !validPath(req.GetTarget()) {
+		return &pb.LinkResponse{Err: errBadPath}, nil
+	}
+	err := os.Link(req.GetName(), filepath.Join(s.vol.Root, filepath.FromSlash(req.GetTarget())))
+	if err != nil {
+		res.Err = mapError(err)
+		return res, nil
+	}
+	return &pb.LinkResponse{
+		Err: mapError(err),
+	}, nil
 }
 
 func (s *Server) handleMkdirRequest(req *pb.MkdirRequest) (proto.Message, error) {
